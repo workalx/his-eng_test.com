@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>History Quiz</title>
+  <link rel="stylesheet" href="test.css" />
+</head>
+<body>
+  <h1>Select the correct answer</h1>
+
+  <div id="quiz-section">
+    <div id="selected-question"></div>
+    <div id="answer-buttons" class="btn-container"></div>
+    <div id="result"></div>
+    <button id="next-button" style="display: none;">Next Question</button>
+  </div>
+
+  <div id="completion-message">
+    <h2>🎉 Congratulations! You answered all the questions!</h2>
+    <p id="stats"></p>
+    <button onclick="restartQuiz()">Start Again</button>
+  </div>
+
+  <script>
+    const questions = [
+      "Creation Stories",
+      "Origin Theories of Canada",
+      "First Contact",
+      "Doctrine of Discovery",
+      "Terra Nullius",
+      "Opposing Euro and Indigenous Worldviews",
+      "Importance of Identity",
+      "Wampum Belts",
+      "Worldview impact on perspective",
+      "Metis identity",
+      "Aboriginal rights",
+      "Sitting Bull",
+      "Pile of Bones",
+      "English and French relationship with Indigenous peoples after contact",
+      "Royal Proclamation",
+      "Confederation",
+      "Constitution Act",
+      "Section 35 of the Constitution",
+      "Comprehensive and Specific Land Claims",
+      "Northwest Passage conflict",
+      "Oka Crisis",
+      "Treaty of Paris and the Seven Year War",
+      "Numbered Treaties",
+      "Treaty Rights"
+    ];
+
+    const correctAnswers = {
+      "Creation Stories": "Stories Indigenous peoples use to explain the world’s beginning.",
+      "Origin Theories of Canada": "Ideas about how Canada started and who lived here first.",
+      "First Contact": "The first meeting between Europeans and Indigenous peoples.",
+      "Doctrine of Discovery": "A belief that European nations had the right to claim new lands.",
+      "Terra Nullius": "The idea that land was empty and could be taken.",
+      "Opposing Euro and Indigenous Worldviews": "Different ways Europeans and Indigenous people saw life.",
+      "Importance of Identity": "Knowing who you are helps keep culture and traditions.",
+      "Wampum Belts": "Beaded belts used by Indigenous peoples to tell stories and make agreements.",
+      "Worldview impact on perspective": "What people believe affects how they see the world.",
+      "Metis identity": "People of mixed Indigenous and European roots.",
+      "Aboriginal rights": "Legal and cultural rights of Indigenous peoples.",
+      "Sitting Bull": "A respected Indigenous chief and spiritual leader.",
+      "Pile of Bones": "Old name for Regina, from bones left after bison hunts.",
+      "English and French relationship with Indigenous peoples after contact": "How colonists treated Indigenous groups after meeting them.",
+      "Royal Proclamation": "A British law saying Indigenous land must be respected.",
+      "Confederation": "The joining of provinces to form Canada in 1867.",
+      "Constitution Act": "Law that created Canada’s own legal system.",
+      "Section 35 of the Constitution": "A part of Canadian law that protects Indigenous rights.",
+      "Comprehensive and Specific Land Claims": "Ways to deal with past land problems in Canada.",
+      "Northwest Passage conflict": "Fights over a water route through the Arctic.",
+      "Oka Crisis": "A 1990 standoff between Mohawk people and the Canadian government.",
+      "Treaty of Paris and the Seven Year War": "Treaty that ended a war and gave land to Britain.",
+      "Numbered Treaties": "Agreements between Indigenous peoples and Canada (Treaties 1–11).",
+      "Treaty Rights": "Special rights kept through treaties with Canada."
+    };
+
+    const fakeAnswers = [
+       "Legal and cultural rights of Indigenous peoples.",
+       "A respected Indigenous chief and spiritual leader.",
+      "Old name for Regina, from bones left after bison hunts.",
+       "How colonists treated Indigenous groups after meeting them.",
+      "A British law saying Indigenous land must be respected.",
+      "The joining of provinces to form Canada in 1867.",
+      "Law that created Canada’s own legal system.",
+       "A part of Canadian law that protects Indigenous rights.",
+       "Ways to deal with past land problems in Canada.",
+       "Fights over a water route through the Arctic.",
+       "A 1990 standoff between Mohawk people and the Canadian government.",
+       "Treaty that ended a war and gave land to Britain.",
+       "Agreements between Indigenous peoples and Canada (Treaties 1–11).",
+       "Special rights kept through treaties with Canada."
+    ];
+
+    const selectedQuestionEl = document.getElementById("selected-question");
+    const answerButtons = document.getElementById("answer-buttons");
+    const resultEl = document.getElementById("result");
+    const nextButton = document.getElementById("next-button");
+    const completionMessage = document.getElementById("completion-message");
+    const stats = document.getElementById("stats");
+    const quizSection = document.getElementById("quiz-section");
+
+    let remainingQuestions = [];
+    let currentQuestion = "";
+    let correctCount = 0;
+    let wrongCount = 0;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function getRandomAnswers(correct) {
+      const wrong = fakeAnswers
+        .filter(f => f !== correct)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 2);
+      return shuffle([correct, ...wrong]);
+    }
+
+    function showNextQuestion() {
+      resultEl.textContent = "";
+      nextButton.style.display = "none";
+      answerButtons.innerHTML = "";
+
+      if (remainingQuestions.length === 0) {
+        showCompletion();
+        return;
+      }
+
+      currentQuestion = remainingQuestions.splice(Math.floor(Math.random() * remainingQuestions.length), 1)[0];
+      selectedQuestionEl.textContent = currentQuestion;
+
+      const correct = correctAnswers[currentQuestion];
+      const options = getRandomAnswers(correct);
+
+      options.forEach(answer => {
+        const btn = document.createElement("button");
+        btn.textContent = answer;
+        btn.classList.add("answer-btn");
+        btn.onclick = () => checkAnswer(answer, correct, btn);
+        answerButtons.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected, correct, button) {
+      const allButtons = document.querySelectorAll(".answer-btn");
+      allButtons.forEach(btn => btn.disabled = true);
+
+      if (selected === correct) {
+        button.classList.add("correct");
+        resultEl.textContent = "✅ Correct!";
+        correctCount++;
+      } else {
+        button.classList.add("wrong");
+        resultEl.textContent = `❌ Incorrect. The correct answer: ${correct}`;
+        wrongCount++;
+      }
+
+      nextButton.style.display = "inline-block";
+    }
+
+    nextButton.addEventListener("click", showNextQuestion);
+
+    function showCompletion() {
+      quizSection.style.display = "none";
+      completionMessage.style.display = "block";
+      stats.textContent = `Correct: ${correctCount}, Incorrect: ${wrongCount}`;
+    }
+
+    function restartQuiz() {
+      remainingQuestions = [...questions];
+      correctCount = 0;
+      wrongCount = 0;
+      completionMessage.style.display = "none";
+      quizSection.style.display = "flex";
+      showNextQuestion();
+    }
+
+    restartQuiz();
+  </script>
+</body>
+</html>
